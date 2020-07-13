@@ -1,6 +1,9 @@
 package service;
 
 import java.io.FileOutputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -8,8 +11,10 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import utility.ConnectionManager;
+
 public class BuyCar {
-	public void Buy() {
+	public void Buy(int userid,String username) throws SQLException, ClassNotFoundException {
 		 ArrayList<String> Cars = new ArrayList<String>();
 
 		    System.out.println("Which company would you like to check out:");
@@ -26,6 +31,8 @@ public class BuyCar {
 		    ArrayList<String> UserChoice = new ArrayList<String>(5);
 		    Scanner sc=new Scanner(System.in);
 		    int a=sc.nextInt();
+		    System.out.println("Enter BuyId");
+		    int id=sc.nextInt();	    
 		    if(a==1) {
 		    	System.out.println("1. 3-series");
 		    	System.out.println("2. 5-series");
@@ -77,6 +84,7 @@ public class BuyCar {
 			    	System.out.println(UserChoice);
 			    	System.out.println("Please visit our showroom for further process");
 			    }
+		    
 		    }
 		    	else if(a==2) {
 				    	System.out.println("1. A3");
@@ -247,12 +255,34 @@ public class BuyCar {
 								  
                  }
 		    try {
+			Connection con=ConnectionManager.getConnection();
+		    	
+		    	String sql="INSERT INTO BUYCAR(ID,USERID,COMPANY,MODEL,PRICE)VALUES(?,?,?,?,?)";
+		    	PreparedStatement st=con.prepareStatement(sql);		    	
+		    	st.setInt(1,id);
+		    	st.setInt(2,userid);
+            String company=UserChoice.get(0);
+		    	st.setString(3,company);
+		    	String model=UserChoice.get(1);
+		    	st.setString(4,model);
+		      	String price=UserChoice.get(2);
+	    	st.setString(5,price);
+		    	st.executeUpdate();
+		    	con.close();
+		    	System.out.println("Your details are stored");
+		    }
+		    catch(Exception e) {
+		    	System.out.println("BuycarID already exists");
+		    }
+		    try {
 		    	String filename="C:\\Users\\user\\Desktop\\demoDetails.pdf";
 		    	Document document=new Document();
 		    	PdfWriter.getInstance(document,new FileOutputStream(filename));
 		    	document.open();
-		    	Paragraph para2=new Paragraph(UserChoice.toString());
-		    	document.add(para2);
+		    	Paragraph para1=new Paragraph("CAR DEALERS & SERVICES:");
+		        document.add(para1);
+		    	Paragraph para2=new Paragraph(userid+" - "+" "+ " "+ username +" - "+" "+" "+UserChoice.toString());
+		    	document.add(para2);		    	
 		    	document.close();
 		    	System.out.println(" ");
 		    	System.out.println("Your pdf file is ready");

@@ -1,6 +1,9 @@
 package service;
 
 import java.io.FileOutputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -8,11 +11,15 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import utility.ConnectionManager;
+
 public class SellCar {
 	
-	public void Sell() {
-		 ArrayList<String> Cars1 = new ArrayList<String>();
-
+	public void Sell(int userid,String username) throws SQLException, ClassNotFoundException {
+		    Scanner sc=new Scanner(System.in);
+		    ArrayList<String> Cars1 = new ArrayList<String>();
+		    System.out.println("Enter sell-id");
+	    	int id=sc.nextInt();  
 		    System.out.println("Which company is your car?");
 		    Cars1.add("1.BMW");
 		    Cars1.add("2.Audi");
@@ -24,8 +31,7 @@ public class SellCar {
 		      {
 		         System.out.println(Cars1.get(i).toString());
 		      }
-		    ArrayList<String> UserChoice1 = new ArrayList<String>(5);
-		    Scanner sc=new Scanner(System.in);
+		    ArrayList<String> UserChoice1 = new ArrayList<String>(5);		     	
 		    int a=sc.nextInt();
 		    if(a==1) {
 		    	System.out.println("1. 3-series");
@@ -355,11 +361,35 @@ public class SellCar {
 								  
                 }
 		    try {
+		    Connection con=ConnectionManager.getConnection();
+	    	
+	    	String sql="INSERT INTO SELLCAR(ID,USERID,COMPANY,MODEL,ASKINGPRICE,SELLERPRICE)VALUES(?,?,?,?,?,?)";
+	    	PreparedStatement st=con.prepareStatement(sql);
+	    	st.setInt(1,id);
+	    	st.setInt(2,userid);
+            String company=UserChoice1.get(0);
+	    	st.setString(3,company);
+	    	String model=UserChoice1.get(1);
+	    	st.setString(4,model);
+	      	String askingprice=UserChoice1.get(2);
+    	    st.setString(5,askingprice);
+    	    String sellingprice=UserChoice1.get(3);
+    	    st.setString(6,sellingprice);
+	    	st.executeUpdate();
+	    	con.close();
+	    	System.out.println("Your details are stored");
+	      }
+             catch(Exception e) {
+                 	System.out.println("SellcarID already exists");
+                    }
+		    try {
 		    	String filename="C:\\Users\\user\\Desktop\\demoDetails.pdf";
 		    	Document document=new Document();
 		    	PdfWriter.getInstance(document,new FileOutputStream(filename));
 		    	document.open();
-		    	Paragraph para2=new Paragraph(UserChoice1.toString());
+		    	Paragraph para1=new Paragraph("CAR DEALERS & SERVICES:");
+		        document.add(para1);
+		    	Paragraph para2=new Paragraph(userid+" - "+" "+ " "+ username+" - " +" "+" "+UserChoice1.toString());
 		    	document.add(para2);
 		    	document.close();
 		    	System.out.println(" ");
